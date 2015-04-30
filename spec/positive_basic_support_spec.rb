@@ -79,6 +79,55 @@ describe PositiveBasicSupport do
   end
 
   it "has the method \'string?\'" do
+    expect( "Hello, World!".string? ).to eq( true )
+    expect( "あいうえお".string? ).to eq( true )
+    expect( "13".string? ).to eq( true )
+    expect( 13.string? ).to eq( false )
+    expect( 13.to_s.string? ).to eq( true )
+    expect( true.string? ).to eq( false )
+    expect( false.string? ).to eq( false )
+    expect( nil.string? ).to eq( false )
+    expect( [1, 1, 2, 3, 5, 8].string? ).to eq( false )
+    expect( [1, 1, 2, 3, 5, 8].map( &:to_s ).all?( &:string? ) ).to eq( true )
+  end
+
+  it "has the method \'symbol?\'" do
+    expect( "Hello, World!".symbol? ).to eq( false )
+    expect( :instance_method.symbol? ).to eq( true )
+    expect( :"Hello, World!".symbol? ).to eq( true )
+    expect( :instance_method.to_s.symbol? ).to eq( false )
+    expect( "あいうえお".symbol? ).to eq( false )
+    expect( "13".symbol? ).to eq( false )
+    expect( 13.symbol? ).to eq( false )
+    expect( true.symbol? ).to eq( false )
+    expect( false.symbol? ).to eq( false )
+    expect( nil.symbol? ).to eq( false )
+    expect( [1, 1, 2, 3, 5, 8].symbol? ).to eq( false )
+    expect( [1, 1, 2, 3, 5, 8].all?( &:symbol? ) ).to eq( false )
+    expect( [:a, :b, :c, :d, :e, :f].all?( &:symbol? ) ).to eq( true )
+    expect( [:a, :b, :c, :d, :e, :f].map( &:to_s ).all?( &:symbol? ) ).to eq( false )
+  end
+
+  it "has the method \'string_or_symbol?\'" do
+    expect( :instance_method.string_or_symbol? ).to eq( true )
+    expect( :instance_method.to_s.string_or_symbol? ).to eq( true )
+    expect( "Hello, World!".string_or_symbol? ).to eq( true )
+    expect( :"Hello, World!".string_or_symbol? ).to eq( true )
+    expect( "あいうえお".string_or_symbol? ).to eq( true )
+    expect( "13".string_or_symbol? ).to eq( true )
+    expect( 13.string_or_symbol? ).to eq( false )
+    expect( 13.to_s.string_or_symbol? ).to eq( true )
+    expect( true.string_or_symbol? ).to eq( false )
+    expect( false.string_or_symbol? ).to eq( false )
+    expect( nil.string_or_symbol? ).to eq( false )
+    expect( [1, 1, 2, 3, 5, 8].string_or_symbol? ).to eq( false )
+    expect( [1, 1, 2, 3, 5, 8].map( &:to_s ).all?( &:string_or_symbol? ) ).to eq( true )
+    expect( [:a, :b, :c, :d, :e, :f].all?( &:string_or_symbol? ) ).to eq( true )
+    expect( [:a, :b, :c, :d, :e, :f].map( &:to_s ).all?( &:string_or_symbol? ) ).to eq( true )
+    expect( [:a, "b", :c, "d", "e", :f].map( &:to_s ).all?( &:string_or_symbol? ) ).to eq( true )
+  end
+
+  it "has the method \'boolean?\'" do
     expect( true.boolean? ).to eq( true )
     expect( false.boolean? ).to eq( true )
     expect( nil.boolean? ).to eq( false )
@@ -96,4 +145,33 @@ describe PositiveBasicSupport do
 
 end
 
-require_relative 'positive_basic_support_spec/basic_object_ext.rb'
+module UpperNamespaceTest
+  module A
+    module B
+
+      module C
+      end
+
+      module C::D
+      end
+
+    end
+  end
+end
+
+describe BasicObject do
+  it "can get upper namespace by \#\.upper_namespaces" do
+    expect( ::UpperNamespaceTest::A.upper_namespaces ).to eq( [ ::UpperNamespaceTest ] )
+    expect( ::UpperNamespaceTest::A::B.upper_namespaces ).to eq( [ ::UpperNamespaceTest::A , ::UpperNamespaceTest ] )
+  end
+  it "can decide whether it has upper namespace or not by \#\.has_upper_namespaces?" do
+    expect( UpperNamespaceTest.has_upper_namespaces? ).to eq( false )
+    expect( UpperNamespaceTest::A.has_upper_namespaces? ).to eq( true )
+    expect( UpperNamespaceTest::A::B.has_upper_namespaces? ).to eq( true )
+  end
+  it "can get the direct upper namespace by \#\.upper_namespace (if exists)" do
+    expect( UpperNamespaceTest.upper_namespace ).to eq( nil )
+    expect( UpperNamespaceTest::A.upper_namespace ).to eq( UpperNamespaceTest )
+    expect( UpperNamespaceTest::A::B.upper_namespace ).to eq( UpperNamespaceTest::A )
+  end
+end

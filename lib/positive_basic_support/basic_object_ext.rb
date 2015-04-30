@@ -8,8 +8,23 @@ module PositiveBasicSupport::BasicObjectExt
 
     # 上位の名前空間のリスト（すべて）
     # @return [::Array]
+    # @example
+    #   module UpperNamespaceTest
+    #     module A
+    #       module B
+    #         module C
+    #         end
+    #         module C::D
+    #         end
+    #       end
+    #     end
+    #   end
+    #
+    # ::UpperNamespaceTest::A.upper_namespaces => [ ::UpperNamespaceTest ]
+    # ::UpperNamespaceTest::A::B.upper_namespaces => [ ::UpperNamespaceTest::A , ::UpperNamespaceTest ]
     def upper_namespaces( _has_upper_namespaces = nil )
-      if _has_upper_namespaces or ( _has_upper_namespaces.nil? and has_upper_namespaces? )
+      _has_upper_namespaces ||= has_upper_namespaces?
+      if _has_upper_namespaces
         splited = self.name.split( "::" )[0..-2]
         ary = ::Array.new
         for i in 0..( splited.length - 1 )
@@ -23,13 +38,20 @@ module PositiveBasicSupport::BasicObjectExt
 
     # 上位の名前空間が存在するか否かを判定するメソッド
     # @return [Boolean]
+    # @example
+    #   UpperNamespaceTest.has_upper_namespaces? => false
+    #   UpperNamespaceTest::A.has_upper_namespaces? => true
+    #   UpperNamespaceTest::A::B.has_upper_namespaces? => true
     def has_upper_namespaces?
       # upper_namespaces.length > 1
       /\:\:/ === name
     end
 
     # 上位の名前空間のリスト（すぐ上のみ）
-    # @return [::Class (Const)]
+    # @return [::Class (Const)]example
+    #   UpperNamespaceTest.upper_namespace => nil
+    #   UpperNamespaceTest::A.upper_namespace => UpperNamespaceTest
+    #   UpperNamespaceTest::A::B.upper_namespace => UpperNamespaceTest::A
     def upper_namespace
       _has_upper_namespaces = has_upper_namespaces?
       if _has_upper_namespaces
@@ -136,6 +158,17 @@ module PositiveBasicSupport::BasicObjectExt
 
   # 文字列（String クラスのインスタンス）か否かを判定するメソッド
   # @return [Boolean]
+  # @example
+  #   "Hello, World!".string? => true
+  #   "あいうえお".string? => true
+  #   "13".string? => true
+  #   13.string? => false
+  #   13.to_s.string? => true
+  #   true.string? => false
+  #   false.string? => false
+  #   nil.string? => false
+  #   [1, 1, 2, 3, 5, 8].string? => false
+  #   [1, 1, 2, 3, 5, 8].map( &:to_s ).all?( &:string? ) => true
   def string?( include_subclasses: false )
     class_decision( ::String , include_subclasses )
   end
@@ -144,6 +177,21 @@ module PositiveBasicSupport::BasicObjectExt
 
   # Symbol クラスのインスタンスか否かを判定するメソッド
   # @return [Boolean]
+  # @example
+  #   "Hello, World!".symbol? => false
+  #   :instance_method.symbol? => true
+  #   :"Hello, World!".symbol? => true
+  #   :instance_method.to_s.symbol? => false
+  #   "あいうえお".symbol? => false
+  #   "13".symbol? => false
+  #   13.symbol? => false
+  #   true.symbol? => false
+  #   false.symbol? => false
+  #   nil.symbol? => false
+  #   [1, 1, 2, 3, 5, 8].symbol? => false
+  #   [1, 1, 2, 3, 5, 8].all?( &:symbol? ) => false
+  #   [:a, :b, :c, :d, :e, :f].all?( &:symbol? ) => true
+  #   [:a, :b, :c, :d, :e, :f].map( &:to_s ).all?( &:symbol? ) => false
   def symbol?
     instance_of?( ::Symbol )
   end
@@ -152,6 +200,22 @@ module PositiveBasicSupport::BasicObjectExt
 
   # {String} クラスまたは {Symbol} クラスのインスタンスか否かを判定するメソッド
   # @return [Boolean]
+  #   :instance_method.string_or_symbol? => true
+  #   :instance_method.to_s.string_or_symbol? => true
+  #   "Hello, World!".string_or_symbol? => true
+  #   :"Hello, World!".string_or_symbol? => true
+  #   "あいうえお".string_or_symbol? => true
+  #   "13".string_or_symbol? => true
+  #   13.string_or_symbol? => false
+  #   13.to_s.string_or_symbol? => true
+  #   true.string_or_symbol? => false
+  #   false.string_or_symbol? => false
+  #   nil.string_or_symbol? => false
+  #   [1, 1, 2, 3, 5, 8].string_or_symbol? => false
+  #   [1, 1, 2, 3, 5, 8].map( &:to_s ).all?( &:string_or_symbol? ) => true
+  #   [:a, :b, :c, :d, :e, :f].all?( &:string_or_symbol? ) => true
+  #   [:a, :b, :c, :d, :e, :f].map( &:to_s ).all?( &:string_or_symbol? ) => true
+  #   [:a, "b", :c, "d", "e", :f].map( &:to_s ).all?( &:string_or_symbol? ) => true
   def string_or_symbol?( include_subclasses: false )
     string?( include_subclasses: include_subclasses ) or symbol?
   end
@@ -202,16 +266,16 @@ module PositiveBasicSupport::BasicObjectExt
   # @note このメソッドは，{Object#error_message_of_class_sub_check_some_variables} と {Object#natural_number?} で使用するためのもの．
   #   通常は{Object#natural_number?} を利用すること．
   # @example
-  #   2.natural_number_except_for_zero? => true
+  #   2.send( :natural_number_except_for_zero? => true
   #
-  #   0.natural_number_except_for_zero? => false
+  #   0.send( :natural_number_except_for_zero? => false
   #
-  #   4.8.natural_number_except_for_zero? => false
-  #   -1.732.natural_number_except_for_zero? => false
-  #   -71.natural_number_except_for_zero? => false
+  #   4.8.send( :natural_number_except_for_zero? => false
+  #   -1.732.send( :natural_number_except_for_zero? => false
+  #   -71.send( :natural_number_except_for_zero? => false
   #
-  #   "あいうえお".natural_number_except_for_zero? => false
-  #   [10, 20, 30].natural_number_except_for_zero? => false
+  #   "あいうえお".send( :natural_number_except_for_zero? => false
+  #   [10, 20, 30].send( :natural_number_except_for_zero? => false
   def natural_number_except_for_zero?
     integer? and self > 0
   end
