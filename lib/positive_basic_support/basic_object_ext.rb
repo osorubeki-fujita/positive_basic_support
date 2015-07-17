@@ -220,6 +220,25 @@ module PositiveBasicSupport::BasicObjectExt
     string?( include_subclasses: include_subclasses ) or symbol?
   end
 
+  # @!group クラスの判定 - 正規表現
+  def regexp?
+    instance_of?( ::Regexp )
+  end
+
+  # @!group クラスの判定 - 配列
+
+  def array?( include_subclasses: false )
+    if include_subclasses
+      kind_of?( ::Array )
+    else
+      instance_of?( ::Array )
+    end
+  end
+
+  def hash?
+    instance_of?( ::Hash )
+  end
+
   # @!group クラスの判定 - 真偽値
 
   # 真偽値か否かを判定するメソッド

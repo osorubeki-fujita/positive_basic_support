@@ -2,11 +2,11 @@ require 'spec_helper'
 require 'deplo'
 
 spec_filename = ::File.expand_path( ::File.dirname( __FILE__ ) )
-version = "0.1.2"
+
+version = ::File.open( "#{ ::File.dirname( __FILE__ ) }/../.current_version" , "r:utf-8" ).read.chomp
 
 describe PositiveBasicSupport do
   it "has a version number \'#{ version }\'" do
-    expect( ::PositiveBasicSupport::VERSION ).to eq( version )
     expect( ::Deplo.version_check( ::PositiveBasicSupport::VERSION , spec_filename ) ).to eq( true )
   end
 
