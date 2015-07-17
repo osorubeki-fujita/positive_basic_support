@@ -228,11 +228,7 @@ module PositiveBasicSupport::BasicObjectExt
   # @!group クラスの判定 - 配列
 
   def array?( include_subclasses: false )
-    if include_subclasses
-      kind_of?( ::Array )
-    else
-      instance_of?( ::Array )
-    end
+    class_decision( ::Array , include_subclasses )
   end
 
   def hash?
